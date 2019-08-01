@@ -69,7 +69,7 @@ bool isBipartite(int G[][V], int src)
 }
 
 // Driver program to test above function 
-int main()
+int main1()
 {
 	int G[][V] = { {0, 1, 0, 1},
 		{1, 0, 1, 0},
