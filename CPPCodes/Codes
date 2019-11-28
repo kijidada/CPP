@@ -4,3 +4,159 @@ Arrange a integer array such that the sum of two consecutive elements in not div
 Microsoft Q - https://i.imgur.com/20gWalD.png
 sol - https://ide.geeksforgeeks.org/KzV0NDils1
 
+Udaan Q - 
+Approach - https://ide.geeksforgeeks.org/FzA7bA6rwn 
+#include <bits/stdc++.h>
+using namespace std;
+class Screen{
+    string name;
+    unordered_map<int,int> aisleCol;
+    vector<vector<int> > *screenH;
+    vector<vector<int> > screenHall;
+    int row,col;
+    
+    void setAiseCols(vector<int> a){
+        int cnt=1;
+        //aisleCol = new unordered_map<int,int>;
+        for(int j=0;j<a.size();++j){
+            aisleCol[(a[j]-1) + cnt++] = 1;
+        }
+    }
+    
+    public:
+        Screen(string screenName, int r,int c, vector<int> aisle){
+            this->name = screenName;
+            setAiseCols(aisle);
+            this->row = r;
+            this->col = c+aisleCol.size();
+            vector<int> rows(r,0);
+            vector<vector<int> > *screen = new vector<vector<int> >(c+aisleCol.size(),rows);
+            this->screenH = screen;
+            //cout << " screen size: "<< screenHall.size();
+        }
+        
+        vector<int> getUnreservedSeatsinRow(int r){
+            screenHall = *screenH;
+            //cout << " aisleCol: "<< aisleCol[9]<<"--";
+            vector<int> unresearverdSeats;
+            if(screenHall.size() == 0) return unresearverdSeats;
+            int subNum = 0;
+            for(int i=0; i<col;++i){
+                //cout << " i:"<<i<<" screenHall[r-1][i]: "<<screenHall[r-1][i]<<" aisleCol[i]: "<<aisleCol[i]<<"|";
+                
+                if(!screenHall[r-1][i]){
+                    if(aisleCol[i]){
+                        subNum++;
+                        //cout << " i:"<<i<<"|";
+                    }
+                    else
+                        unresearverdSeats.push_back(i+1 - subNum );
+                }
+            }
+            return unresearverdSeats;
+        }
+        
+        int reserveSeats(int r, vector<int> seats){
+            screenHall = *screenH;
+            for(int i=0;i<seats.size();++i){
+                if(!screenHall[r-1][seats[i]-1]){
+                    if(!aisleCol[seats[i]-1]){
+                        screenHall[r-1][seats[i]-1] =1;
+                    }
+                }
+                else return 0;
+            }
+            for(int i=0;i<col;++i){
+                cout << " "<<screenHall[r-1][i]<<"|";
+            }
+            return 1;
+        }
+        vector<int> getContiguousSeats(int numSeats,int r,int seatNo){
+            screenHall = *screenH;
+            vector<int> suggestedSeats;
+            int minSeatNo = (seatNo-1)-numSeats;
+            int maxSeatNo = (seatNo-1)+numSeats;
+           // for(int i=0;i<aisleCol.size();++i){
+           //     if(minSeatNo <= aisleCol[i] && maxSeatNo >= aisleCol[i]) return suggestedSeats;
+            //}
+            for(int i=minSeatNo;i<seatNo;++i){
+                if(!screenHall[r-1][i]){
+                    suggestedSeats.push_back(i+1-aisleCol[i]);
+                }else{
+                    suggestedSeats.clear();
+                    break;
+                }
+            }
+            for(int i=seatNo-1;i<maxSeatNo;++i){
+                if(!screenHall[r-1][i] && !aisleCol[i]){
+                    suggestedSeats.push_back(i+1);
+                }else{
+                    suggestedSeats.clear();
+                    return suggestedSeats;
+                }
+            }
+            return suggestedSeats;
+        }
+        
+};
+
+vector<string> splitstring(string s,char delimiter){
+    stringstream ss(s);
+    string temp;
+    vector<string> vs;
+    while(getline(ss,temp,delimiter)){
+        vs.push_back(temp);
+    }
+    return vs;
+}
+int main() {
+	int T;
+	cin >> T;
+	cin.ignore();
+	map<string,Screen*> hall;
+	while(T--){
+	    string str;
+	    getline(cin,str);
+	    vector<string> commands = splitstring(str,' ');
+	    cout<<" commands: "<<commands.size()<<" ";
+	    //for(int i=0;i<commands.size();i++){
+	    ///        cout<<"\ncommands: "<<commands[i]<<" ";
+        //    }
+        if(commands[0] == "add-screen"){
+            vector<int> aisles;
+            for(int i=4;i<commands.size();i+=2){
+                aisles.push_back(stoi(commands[i]));
+                //cout <<"\naisle: "<<commands[i]<<"|";
+            }
+            Screen *s = new Screen(commands[1], stoi(commands[2]), stoi(commands[3]), aisles);
+            hall[commands[1]] = s;
+        }
+        else if(commands[0] == "get-unreserved-seats"){
+            Screen s = *hall[commands[1]];
+            //cout << "here";
+            vector<int> seats = s.getUnreservedSeatsinRow(stoi(commands[2]));
+            //cout << "here2";
+            if(seats.empty()) cout<<"none";
+            else{
+                for(int i=0;i<seats.size();i++){
+    	            cout<<seats[i]<<" ";
+                }
+            }
+        }
+        else if(commands[0] == "reserve-seat"){
+            Screen s = *hall[commands[1]];
+            vector<int> seatsToBook;
+            for(int i=3;i<commands.size();i++){
+                seatsToBook.push_back(stoi(commands[i]));
+                //cout <<"\naisle: "<<commands[i]<<"|";
+            }
+            if(s.reserveSeats(stoi(commands[2]),seatsToBook)){
+                cout << "success";
+            }else{
+                cout << "failure";
+            }
+        }
+        cout << "\n";
+	}
+	return 0;
+}
